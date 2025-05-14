@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendar - Calendar App</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <a>About sus</a>
+    <a href="http://127.0.0.1:5500/frontend/index.html" style="color:cornsilk">Sign out</a>
+  </header>
+  <div class="calendar-container">
+    <header class="calendar-header">
+      <button id="prev-month" aria-label="Previous month">&#8592;</button>
+      <button id="month-label" style="background:none;border:none;font-size:1.5em;cursor:pointer;"></button>
+      <div id="year-dropdown" class="year-dropdown" style="display:none; position:absolute; z-index:10;"></div>
+      <button id="next-month" aria-label="Next month">&#8594;</button>
+    </header>
+    <div id="calendar-grid" class="calendar-grid"></div>
+  </div>
+  <!-- Modal placeholder -->
+  <div id="modal-root"></div>
+  <script type="module" src="js/api.js"></script>
+  <script type="module" src="js/modal.js"></script>
+  <script type="module" src="js/calendar.js"></script>
+</body>
+</html> 

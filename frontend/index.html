@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - Calendar App</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-form" id="auth-form">
+      <h2 id="form-title">Sign In</h2>
+      <form id="login-form">
+        <input type="email" id="email" placeholder="Email" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Sign In</button>
+      </form>
+      <form id="register-form" style="display:none;">
+        <input type="email" id="reg-email" placeholder="Email" required />
+        <input type="password" id="reg-password" placeholder="Password" required />
+        <button type="submit">Sign Up</button>
+      </form>
+      <div class="auth-toggle">
+        <span id="toggle-signup">Don't have an account? <a href="#">Sign Up</a></span>
+        <span id="toggle-signin" style="display:none;">Already have an account? <a href="#">Sign In</a></span>
+      </div>
+      <div class="auth-google">
+        <button id="google-signin">Sign in with Google</button>
+      </div>
+      <div class="auth-reset">
+        <a href="#" id="forgot-password">Forgot password?</a>
+      </div>
+      <div id="auth-message"></div>
+    </div>
+  </div>
+  <script type="module" src="js/auth.js"></script>
+</body>
+</html> 
