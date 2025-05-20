@@ -209,28 +209,23 @@ button:hover {
   opacity: 0.5;
 }
 /* Modal styling */
-.modal {
-  background-color: var(--calendar-bg);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
+.modal__overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  justify-content: center;
 }
-
-.modal-close {
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: var(--text-color);
-}
-
-.modal-content {
-  margin-top: 15px;
+.modal__container {
+  background: #fff;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  padding: 2em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.33);
+  z-index: 10000;
 }
 
 .event {

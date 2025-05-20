@@ -21,8 +21,23 @@
     </header>
     <div id="calendar-grid" class="calendar-grid"></div>
   </div>
-  <!-- Modal placeholder -->
-  <div id="modal-root"></div>
+  <!-- Modal -->
+<div class="modal micromodal-slide" id="modal-1" aria-hidden="true">
+  <div class="modal__overlay" tabindex="-1" data-micromodal-close>
+    <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+      <header class="modal__header">
+        <h2 class="modal__title" id="modal-1-title">
+          Modal Title
+        </h2>
+        <button class="modal__close" aria-label="Close modal" data-micromodal-close></button>
+      </header>
+      <div class="modal__content" id="modal-1-content">
+        Modal Content
+      </div>
+    </div>
+  </div>
+</div>
+       
   <script type="module" src="js/api.js"></script>
   <script type="module" src="js/modal.js"></script>
   <script type="module" src="js/calendar.js"></script>

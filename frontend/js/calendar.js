@@ -72,6 +72,15 @@ document.addEventListener('mousedown', (e) => {
   }
 });
 
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!getToken()) {
+    window.location.href = 'index.html';
+    return;
+  }
+  MicroModal.init(); // Initialize MicroModal once
+  await loadAndRenderCalendar(currentMonth, currentYear);
+});
+
 async function loadAndRenderCalendar(month, year) {
   events = await getEvents();
   renderCalendar(month, year);
@@ -117,7 +126,6 @@ function renderCalendar(month, year) {
 }
 
 function openModalForDay(day, month, year) {
-  // TODO: Open modal for adding/editing events
-  // openModal({ day, month, year });
-  alert(`Open modal for ${day}/${month + 1}/${year}`);
+  document.getElementById('modal-1-title').textContent = `${month + 1}/${day}/${year}`;
+  MicroModal.show('modal-1');
 } 
