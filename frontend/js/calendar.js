@@ -5,15 +5,6 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let events = [];
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Protect page
-  if (!getToken()) {
-    window.location.href = 'index.html';
-    return;
-  }
-  await loadAndRenderCalendar(currentMonth, currentYear);
-});
-
 document.getElementById('prev-month').addEventListener('click', async () => {
   currentMonth--;
   if (currentMonth < 0) {
@@ -77,7 +68,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = 'index.html';
     return;
   }
-  MicroModal.init(); // Initialize MicroModal once
   await loadAndRenderCalendar(currentMonth, currentYear);
 });
 
@@ -125,7 +115,18 @@ function renderCalendar(month, year) {
   document.getElementById('month-label').textContent = `${new Date(year, month).toLocaleString('default', { month: 'long' })} ${year}`;
 }
 
-function openModalForDay(day, month, year) {
+
+let modalLoaded = false;
+
+async function openModalForDay(day, month, year) {
+  if (!modalLoaded) {
+    const resp = await fetch('modal.html');
+    const html = await resp.text();
+    document.body.insertAdjacentHTML('beforeend', html);
+    MicroModal.init();
+    modalLoaded = true;
+  }
   document.getElementById('modal-1-title').textContent = `${month + 1}/${day}/${year}`;
+  document.getElementById('modal-1-content').textContent = `Events for ${month + 1}/${day}/${year}`;
   MicroModal.show('modal-1');
-} 
+}
