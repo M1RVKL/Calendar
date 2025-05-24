@@ -375,6 +375,18 @@ button:hover {
   background-color: #45a049;
 }
 
+.plan-item button.delete {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 1em;
+  vertical-align: midddle;
+}
+.plan-item button.delete:hover {
+  color: #c0392b;
+}
+
 #plan-input-container {
   margin: 15px 0;
   padding: 15px;

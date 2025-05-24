@@ -1,4 +1,4 @@
-import { getToken, getEvents } from './api.js';
+import { getToken, createEvent, getEvents, deleteEvent } from './api.js';
 // import { openModal } from './modal.js';
 
 let currentMonth = new Date().getMonth();
@@ -185,6 +185,8 @@ async function openModalForDay(day, month, year) {
         timeInputContainer.style.display = 'none';
         planInputContainer.style.display = 'none';
         // Refresh the calendar to show the new event
+        events = await getEvents();
+        renderPlansList();
         await loadAndRenderCalendar(currentMonth, currentYear);
       } catch (error) {
         console.error('Error saving plan:', error);
@@ -192,6 +194,37 @@ async function openModalForDay(day, month, year) {
     }
   };
 
+  function renderPlansList() {
+    plansList.innerHTML = '';
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayEvents = events.filter(ev => ev.date && ev.date.startsWith(dateStr));
+    dayEvents.forEach(event => {
+      const div = document.createElement('div');
+      div.className = `plan-item ${event.importance}`;
+      div.textContent = event.note + (event.startTime ? ` (${event.startTime})` : '');
+      
+      const delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️';
+    delBtn.className = 'delete';
+    delBtn.style.marginLeft = '10px';
+    delBtn.onclick = async (e) => {
+      e.stopPropagation();
+      try {
+        await deleteEvent(event._id);
+        // Refresh events and list
+        events = await getEvents();
+        renderPlansList();
+        await loadAndRenderCalendar(currentMonth, currentYear);
+      } catch (err) {
+        alert('Failed to delete event');
+      }
+    };
+      div.appendChild(delBtn);
+      plansList.appendChild(div);
+    });
+  }
+
+  renderPlansList();
   // Format the date nicely
   const date = new Date(year, month, day);
   const formattedDate = date.toLocaleDateString('en-US', { 
@@ -202,17 +235,5 @@ async function openModalForDay(day, month, year) {
   });
   document.getElementById('modal-1-title').textContent = formattedDate;
   // Load existing plans for this day
-  plansList.innerHTML = '';
-  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-  const dayEvents = events.filter(ev => ev.date && ev.date.startsWith(dateStr));
-  dayEvents.forEach(event => {
-    const planItem = document.createElement('div');
-    planItem.className = `plan-item ${event.importance}`;
-    planItem.innerHTML = `
-      <span>${event.note}${event.startTime ? ' <span style=\'color:#1976d2;font-size:0.95em\'>' + event.startTime + '</span>' : ''}</span>
-      <span class="importance-badge">${event.importance}</span>
-    `;
-    plansList.appendChild(planItem);
-  });
   MicroModal.show('modal-1');
 }
