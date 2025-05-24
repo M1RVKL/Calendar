@@ -209,28 +209,64 @@ button:hover {
   opacity: 0.5;
 }
 /* Modal styling */
-.modal {
-  background-color: var(--calendar-bg);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.modal-header {
+.modal__overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 9999;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  justify-content: center;
+}
+.modal__container {
+  background: #fff;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  padding: 2em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.33);
+  z-index: 10000;
+  position: relative;
 }
 
-.modal-close {
-  font-size: 1.5rem;
+.modal__header {
+  position: relative;
+  text-align: center;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  padding-top: 0.5em;
+}
+
+.modal__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  font-weight: bold;
+  color: #666;
+  background: none;
+  border: none;
   cursor: pointer;
-  color: var(--text-color);
+  padding: 5px 10px;
+  transition: color 0.2s;
+  line-height: 1;
+  z-index: 10;
 }
 
-.modal-content {
-  margin-top: 15px;
+.modal__close:hover {
+  color: #333;
+}
+
+#time-input-container {
+  margin-top: 8px;
+}
+
+#plan-time {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 .event {
@@ -311,4 +347,93 @@ button:hover {
 .year-option:hover, .year-option.selected {
   background: #f0f4f8;
   font-weight: bold;
+}
+
+.modal__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.add-plan-container {
+  margin-bottom: 20px;
+}
+
+.add-plan-btn {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.add-plan-btn:hover {
+  background-color: #45a049;
+}
+
+#plan-input-container {
+  margin: 15px 0;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+#plan-input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#importance-select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+#save-plan-btn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+#save-plan-btn:hover {
+  background-color: #1976D2;
+}
+
+#plans-list {
+  margin-top: 20px;
+}
+
+.plan-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan-item.optional {
+  border-left: 4px solid #43a047;
+}
+
+.plan-item.important {
+  border-left: 4px solid #fbc02d;
+}
+
+.plan-item.mandatory {
+  border-left: 4px solid #e53935;
 } 

@@ -5,15 +5,6 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let events = [];
 
-document.addEventListener('DOMContentLoaded', async () => {
-  // Protect page
-  if (!getToken()) {
-    window.location.href = 'index.html';
-    return;
-  }
-  await loadAndRenderCalendar(currentMonth, currentYear);
-});
-
 document.getElementById('prev-month').addEventListener('click', async () => {
   currentMonth--;
   if (currentMonth < 0) {
@@ -72,6 +63,14 @@ document.addEventListener('mousedown', (e) => {
   }
 });
 
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!getToken()) {
+    window.location.href = 'index.html';
+    return;
+  }
+  await loadAndRenderCalendar(currentMonth, currentYear);
+});
+
 async function loadAndRenderCalendar(month, year) {
   events = await getEvents();
   renderCalendar(month, year);
@@ -116,8 +115,104 @@ function renderCalendar(month, year) {
   document.getElementById('month-label').textContent = `${new Date(year, month).toLocaleString('default', { month: 'long' })} ${year}`;
 }
 
-function openModalForDay(day, month, year) {
-  // TODO: Open modal for adding/editing events
-  // openModal({ day, month, year });
-  alert(`Open modal for ${day}/${month + 1}/${year}`);
-} 
+
+let modalLoaded = false;
+
+async function openModalForDay(day, month, year) {
+  if (!modalLoaded) {
+    const resp = await fetch('modal.html');
+    const html = await resp.text();
+    document.body.insertAdjacentHTML('beforeend', html);
+    modalLoaded = true;
+  }
+  // Always re-init MicroModal after modal is inserted
+  if (window.MicroModal) MicroModal.init();
+
+  // Add event listeners for the plan functionality
+  const addPlanBtn = document.getElementById('add-plan-btn');
+  const planInputContainer = document.getElementById('plan-input-container');
+  const savePlanBtn = document.getElementById('save-plan-btn');
+  const planInput = document.getElementById('plan-input');
+  const importanceSelect = document.getElementById('importance-select');
+  const plansList = document.getElementById('plans-list');
+  const scheduledCheckbox = document.getElementById('scheduled-checkbox');
+  const timeInputContainer = document.getElementById('time-input-container');
+  const planTime = document.getElementById('plan-time');
+
+  addPlanBtn.onclick = () => {
+    planInputContainer.style.display = 'block';
+    planInput.focus();
+  };
+
+  scheduledCheckbox.onchange = function() {
+    if (this.checked) {
+      timeInputContainer.style.display = 'block';
+    } else {
+      timeInputContainer.style.display = 'none';
+      planTime.value = '';
+    }
+  };
+
+  savePlanBtn.onclick = async () => {
+    const planText = planInput.value.trim();
+    if (planText) {
+      const importance = importanceSelect.value;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isScheduled = scheduledCheckbox.checked;
+      const time = isScheduled ? planTime.value : undefined;
+      try {
+        const event = {
+          date: dateStr,
+          note: planText,
+          importance: importance
+        };
+        if (isScheduled && time) {
+          event.startTime = time;
+        }
+        await createEvent(event);
+        // Add the plan to the list
+        const planItem = document.createElement('div');
+        planItem.className = `plan-item ${importance}`;
+        planItem.innerHTML = `
+          <span>${planText}${isScheduled && time ? ' <span style=\'color:#1976d2;font-size:0.95em\'>' + time + '</span>' : ''}</span>
+          <span class="importance-badge">${importance}</span>
+        `;
+        plansList.appendChild(planItem);
+        // Clear and hide the input
+        planInput.value = '';
+        planTime.value = '';
+        scheduledCheckbox.checked = false;
+        timeInputContainer.style.display = 'none';
+        planInputContainer.style.display = 'none';
+        // Refresh the calendar to show the new event
+        await loadAndRenderCalendar(currentMonth, currentYear);
+      } catch (error) {
+        console.error('Error saving plan:', error);
+      }
+    }
+  };
+
+  // Format the date nicely
+  const date = new Date(year, month, day);
+  const formattedDate = date.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  document.getElementById('modal-1-title').textContent = formattedDate;
+  // Load existing plans for this day
+  plansList.innerHTML = '';
+  const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  const dayEvents = events.filter(ev => ev.date && ev.date.startsWith(dateStr));
+  dayEvents.forEach(event => {
+    const planItem = document.createElement('div');
+    planItem.className = `plan-item ${event.importance}`;
+    planItem.innerHTML = `
+      <span>${event.note}${event.startTime ? ' <span style=\'color:#1976d2;font-size:0.95em\'>' + event.startTime + '</span>' : ''}</span>
+      <span class="importance-badge">${event.importance}</span>
+    `;
+    plansList.appendChild(planItem);
+  });
+  MicroModal.show('modal-1');
+}
