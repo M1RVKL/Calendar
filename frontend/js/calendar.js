@@ -1,6 +1,6 @@
-// calendar.js
-import { getToken, getEvents } from './api.js';
-import { openModalForDay, setModalEvents } from './modal.js';
+
+import { getToken, createEvent, getEvents, deleteEvent } from './api.js';
+// import { openModal } from './modal.js';
 
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
@@ -102,16 +102,178 @@ function renderCalendar(month, year) {
     cell.addEventListener('click', () => openModalForDay(d, month, year, currentMonth, currentYear, loadAndRenderCalendar));
 
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const dayEvents = events.filter(ev => ev.date && ev.date.startsWith(dateStr));
+    const dayEvents = events.filter(ev => {
+  // Normal event on this date
+  if (ev.date && ev.date.startsWith(dateStr)) return true;
+  // Repeat logic
+  if (ev.repeat && ev.repeat.type && ev.repeat.type !== 'none') {
+    const eventDate = new Date(ev.date);
+    const thisDate = new Date(year, month, d);
+    if (ev.repeat.type === 'weekly') {
+      // Check weekday match
+      const weekday = thisDate.getDay();
+      if (ev.repeat.daysOfWeek && ev.repeat.daysOfWeek.includes(weekday)) {
+        // Optionally check endDate
+        if (!ev.repeat.endDate || thisDate <= new Date(ev.repeat.endDate)) {
+          // Only show if event started before this date
+          if (eventDate <= thisDate) return true;
+        }
+      }
+    }
+    // Add daily/monthly logic as needed
+  }
+  return false;
+});
+    const eventsContainer = document.createElement('div');
+    eventsContainer.className = 'calendar-events';
     dayEvents.forEach(ev => {
       const evDiv = document.createElement('div');
       evDiv.className = `event ${ev.importance}`;
-      evDiv.textContent = ev.note;
-      cell.appendChild(evDiv);
+      eventsContainer.appendChild(evDiv);
     });
+    cell.appendChild(eventsContainer);
 
     grid.appendChild(cell);
   }
 
   document.getElementById('month-label').textContent = `${new Date(year, month).toLocaleString('default', { month: 'long' })} ${year}`;
+}
+
+
+let modalLoaded = false;
+
+async function openModalForDay(day, month, year) {
+  if (!modalLoaded) {
+    const resp = await fetch('modal.html');
+    const html = await resp.text();
+    document.body.insertAdjacentHTML('beforeend', html);
+    modalLoaded = true;
+  }
+  // Always re-init MicroModal after modal is inserted
+  if (window.MicroModal) MicroModal.init();
+
+  // Add event listeners for the plan functionality
+  const addPlanBtn = document.getElementById('add-plan-btn');
+  const planInputContainer = document.getElementById('plan-input-container');
+  const savePlanBtn = document.getElementById('save-plan-btn');
+  const planInput = document.getElementById('plan-input');
+  const importanceSelect = document.getElementById('importance-select');
+  const plansList = document.getElementById('plans-list');
+  const scheduledCheckbox = document.getElementById('scheduled-checkbox');
+  const timeInputContainer = document.getElementById('time-input-container');
+  const planTime = document.getElementById('plan-time');
+
+  addPlanBtn.onclick = () => {
+    planInputContainer.style.display = 'block';
+    planInput.focus();
+  };
+
+  scheduledCheckbox.onchange = function() {
+    if (this.checked) {
+      timeInputContainer.style.display = 'block';
+    } else {
+      timeInputContainer.style.display = 'none';
+      planTime.value = '';
+    }
+  };
+
+  savePlanBtn.onclick = async () => {
+    const planText = planInput.value.trim();
+    if (planText) {
+      const importance = importanceSelect.value;
+      const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isScheduled = scheduledCheckbox.checked;
+      const time = isScheduled ? planTime.value : undefined;
+
+  const repeat = {
+    type: repeatType.value,
+    daysOfWeek: [],
+    interval: 1
+  };
+  if (repeat.type === 'weekly') {
+   repeat.daysOfWeek = Array.from(repeatWeekdays.querySelectorAll('input:checked')).map(cb => Number(cb.value));
+  }
+
+      try {
+        const event = {
+          date: dateStr,
+          note: planText,
+          importance: importance,
+          repeat
+        };
+        if (isScheduled && time) {
+          event.startTime = time;
+        }
+        await createEvent(event);
+        // Add the plan to the list
+        const planItem = document.createElement('div');
+        planItem.className = `plan-item ${importance}`;
+        planItem.innerHTML = `
+          <span>${planText}${isScheduled && time ? ' <span style=\'color:#1976d2;font-size:0.95em\'>' + time + '</span>' : ''}</span>
+          <span class="importance-badge">${importance}</span>
+        `;
+        plansList.appendChild(planItem);
+        // Clear and hide the input
+        planInput.value = '';
+        planTime.value = '';
+        scheduledCheckbox.checked = false;
+        timeInputContainer.style.display = 'none';
+        planInputContainer.style.display = 'none';
+        // Refresh the calendar to show the new event
+        events = await getEvents();
+        renderPlansList();
+        await loadAndRenderCalendar(currentMonth, currentYear);
+      } catch (error) {
+        console.error('Error saving plan:', error);
+      }
+    }
+  };
+
+  function renderPlansList() {
+    plansList.innerHTML = '';
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayEvents = events.filter(ev => ev.date && ev.date.startsWith(dateStr));
+    dayEvents.forEach(event => {
+      const div = document.createElement('div');
+      div.className = `plan-item ${event.importance}`;
+      div.textContent = event.note + (event.startTime ? ` (${event.startTime})` : '');
+      
+      const delBtn = document.createElement('button');
+    delBtn.textContent = '🗑️';
+    delBtn.className = 'delete';
+    delBtn.style.marginLeft = '10px';
+    delBtn.onclick = async (clickEvent) => {
+      clickEvent.stopPropagation();
+      try {
+        await deleteEvent(event._id);
+        events = await getEvents();
+        renderPlansList();
+        await loadAndRenderCalendar(currentMonth, currentYear);
+      } catch (err) {
+        alert('Failed to delete event');
+      }
+    };
+      div.appendChild(delBtn);
+      plansList.appendChild(div);
+    });
+  }
+ 
+  const repeatType = document.getElementById('repeat-type');
+const repeatWeekdays = document.getElementById('repeat-weekdays');
+
+repeatType.onchange = function() {
+  repeatWeekdays.style.display = this.value === 'weekly' ? 'block' : 'none';
+};
+  renderPlansList();
+  // Format the date nicely
+  const date = new Date(year, month, day);
+  const formattedDate = date.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+  document.getElementById('modal-1-title').textContent = formattedDate;
+  // Load existing plans for this day
+  MicroModal.show('modal-1');
 }

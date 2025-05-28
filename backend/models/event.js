@@ -7,6 +7,15 @@ const eventSchema = new mongoose.Schema({
   importance: { type: String, enum: ['optional', 'important', 'mandatory'], default: 'optional' },
   startTime: { type: String }, // e.g. '14:00'
   endTime: { type: String },   // e.g. '15:00'
+  repeat: {
+    type: {
+      type: String,
+      default: 'none',
+  },
+    daysOfWeek: [Number],
+    interval: { type: Number, default: 1 },
+    endDate: Date
+  },
   notify: { type: Boolean, default: false },
 }, { timestamps: true });
 
