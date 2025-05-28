@@ -187,6 +187,37 @@ button:hover {
   transform: translateY(-2px);
 }
 
+.calendar-events-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 4px;
+  align-items: flex-start;
+}
+
+.event-bar {
+  width: 90%;
+  height: 5px;
+  border-radius: 4px;
+  margin: 0 auto;
+  cursor: pointer;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.event-bar.optional {
+  background: #43a047;
+}
+.event-bar.important {
+  background: #fbc02d;
+}
+.event-bar.mandatory {
+  background: #e53935;
+}
+.event-bar:hover {
+  opacity: 1;
+  box-shadow: 0 0 2px #333;
+}
+
 .calendar-day::after {
   content: '';
   position: absolute;

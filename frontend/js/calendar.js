@@ -27,7 +27,7 @@ const monthLabel = document.getElementById('month-label');
 const yearDropdown = document.getElementById('year-dropdown');
 
 function populateYearDropdown(selectedYear) {
-  const startYear = 1980;
+  const startYear = 2020;
   const endYear = new Date().getFullYear() + 10;
   yearDropdown.innerHTML = '';
   for (let y = startYear; y <= endYear; y++) {
@@ -103,13 +103,36 @@ function renderCalendar(month, year) {
     cell.addEventListener('click', () => openModalForDay(d, month, year));
     // Render events for this day
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-    const dayEvents = events.filter(ev => ev.date && ev.date.startsWith(dateStr));
+    const dayEvents = events.filter(ev => {
+  // Normal event on this date
+  if (ev.date && ev.date.startsWith(dateStr)) return true;
+  // Repeat logic
+  if (ev.repeat && ev.repeat.type && ev.repeat.type !== 'none') {
+    const eventDate = new Date(ev.date);
+    const thisDate = new Date(year, month, d);
+    if (ev.repeat.type === 'weekly') {
+      // Check weekday match
+      const weekday = thisDate.getDay();
+      if (ev.repeat.daysOfWeek && ev.repeat.daysOfWeek.includes(weekday)) {
+        // Optionally check endDate
+        if (!ev.repeat.endDate || thisDate <= new Date(ev.repeat.endDate)) {
+          // Only show if event started before this date
+          if (eventDate <= thisDate) return true;
+        }
+      }
+    }
+    // Add daily/monthly logic as needed
+  }
+  return false;
+});
+    const eventsContainer = document.createElement('div');
+    eventsContainer.className = 'calendar-events';
     dayEvents.forEach(ev => {
       const evDiv = document.createElement('div');
       evDiv.className = `event ${ev.importance}`;
-      evDiv.textContent = ev.note;
-      cell.appendChild(evDiv);
+      eventsContainer.appendChild(evDiv);
     });
+    cell.appendChild(eventsContainer);
     grid.appendChild(cell);
   }
   document.getElementById('month-label').textContent = `${new Date(year, month).toLocaleString('default', { month: 'long' })} ${year}`;
@@ -160,11 +183,22 @@ async function openModalForDay(day, month, year) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const isScheduled = scheduledCheckbox.checked;
       const time = isScheduled ? planTime.value : undefined;
+
+  const repeat = {
+    type: repeatType.value,
+    daysOfWeek: [],
+    interval: 1
+  };
+  if (repeat.type === 'weekly') {
+   repeat.daysOfWeek = Array.from(repeatWeekdays.querySelectorAll('input:checked')).map(cb => Number(cb.value));
+  }
+
       try {
         const event = {
           date: dateStr,
           note: planText,
-          importance: importance
+          importance: importance,
+          repeat
         };
         if (isScheduled && time) {
           event.startTime = time;
@@ -207,11 +241,10 @@ async function openModalForDay(day, month, year) {
     delBtn.textContent = '🗑️';
     delBtn.className = 'delete';
     delBtn.style.marginLeft = '10px';
-    delBtn.onclick = async (e) => {
-      e.stopPropagation();
+    delBtn.onclick = async (clickEvent) => {
+      clickEvent.stopPropagation();
       try {
         await deleteEvent(event._id);
-        // Refresh events and list
         events = await getEvents();
         renderPlansList();
         await loadAndRenderCalendar(currentMonth, currentYear);
@@ -223,7 +256,13 @@ async function openModalForDay(day, month, year) {
       plansList.appendChild(div);
     });
   }
+ 
+  const repeatType = document.getElementById('repeat-type');
+const repeatWeekdays = document.getElementById('repeat-weekdays');
 
+repeatType.onchange = function() {
+  repeatWeekdays.style.display = this.value === 'weekly' ? 'block' : 'none';
+};
   renderPlansList();
   // Format the date nicely
   const date = new Date(year, month, day);

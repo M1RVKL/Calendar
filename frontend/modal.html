@@ -12,6 +12,26 @@
           <button id="add-plan-btn" class="add-plan-btn">+ Add Plan</button>
         </div>
         <div id="plan-input-container" style="display: none;">
+          <div style="margin: 10px 0;">
+  <label style="font-size: 0.95em;">
+    Repeat:
+    <select id="repeat-type">
+      <option value="none">Does not repeat</option>
+      <option value="daily">Every day</option>
+      <option value="weekly">Every week</option>
+      <option value="monthly">Every month</option>
+    </select>
+  </label>
+  <div id="repeat-weekdays" style="display:none; margin-top: 5px;">
+    <label><input type="checkbox" value="1">Mon</label>
+    <label><input type="checkbox" value="2">Tue</label>
+    <label><input type="checkbox" value="3">Wed</label>
+    <label><input type="checkbox" value="4">Thu</label>
+    <label><input type="checkbox" value="5">Fri</label>
+    <label><input type="checkbox" value="6">Sat</label>
+    <label><input type="checkbox" value="0">Sun</label>
+  </div>
+</div>
           <input type="text" id="plan-input" placeholder="Enter your plan...">
           <select id="importance-select">
             <option value="optional">Optional</option>
